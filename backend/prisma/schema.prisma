@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {   //users can create job posts
+  id       Int       @id @default(autoincrement())
+  email    String    @unique
+  name     String
+  posts    JobPost[]
+}
+
+model CohortStudent { //Represents students who are part of cohort. These students are able to apply for job posts
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  name           String
+  userId         Int?
+  applications   JobApplication[]
+}
+
+model JobPost {     //Represents job postings created by users. These are the jobs that can be applied for by cohort students
+  id          Int             @id @default(autoincrement())
+  title       String
+  description String
+  company     String
+  createdAt   DateTime        @default(now())
+  userId      Int
+  user        User            @relation(fields: [userId], references: [id])
+  applications JobApplication[]
+}
+
+
+model JobApplication {  //Represents applications made by cohort students for job posts. This model captures which student applied for which job and when
+  id             Int            @id @default(autoincrement())
+  jobId          Int
+  job            JobPost        @relation(fields: [jobId], references: [id])
+  cohortStudentId Int
+  cohortStudent  CohortStudent  @relation(fields: [cohortStudentId], references: [id])
+  appliedAt      DateTime       @default(now())
+}
